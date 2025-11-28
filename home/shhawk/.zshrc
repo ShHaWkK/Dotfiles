@@ -243,7 +243,63 @@ function killport() {
 }
 
 
-##########  DOTFILES EXPORT ##########
+##########  AUTO VENV PYTHON ##########
+
+_auto_venv() {
+  if [[ -n "$VIRTUAL_ENV" && ! -d "./.venv" ]]; then
+    # On sort du projet -> désactivation
+    deactivate 2>/dev/null
+  elif [[ -z "$VIRTUAL_ENV" && -d "./.venv" ]]; then
+    # On entre dans un projet -> activation
+    source "./.venv/bin/activate" 2>/dev/null && echo "[venv activé]"
+  fi
+}
+
+autoload -U add-zsh-hook
+add-zsh-hook chpwd _auto_venv
+# appel une fois au démarrage
+_auto_venv
+
+
+##########  TIMER D'EXTINCTION AVEC TERMDOWN ##########
+
+timedown() {
+  if [[ -z "$1" ]]; then
+    echo "Usage : timedown <TIME>"
+    echo "  Exemples :"
+    echo "    timedown 23:45       # heure locale (Paris si ton système est en Europe/Paris)"
+    echo "    timedown 1h30m       # dans 1h30"
+    echo "    timedown 45m         # dans 45 minutes"
+    return 1
+  fi
+
+  local timespec="$*"
+
+  # petit rappel
+  echo "⏳ Extinction programmée avec termdown vers : $timespec"
+  echo "   (Heure locale : $(date '+%H:%M %Z'))"
+  echo "   Tu peux annuler en faisant Ctrl+C avant la fin."
+  echo
+
+  # compte à rebours (bloquant) - termdown accepte 23:30, '1h 5m', etc. :contentReference[oaicite:0]{index=0}
+  termdown "$timespec"
+  local status=$?
+
+  # si tu quittes termdown (Ctrl+C) → pas d’extinction
+  if (( status != 0 )); then
+    echo "⏹ Timer interrompu (code $status), le PC ne sera pas éteint."
+    return $status
+  fi
+
+  echo "💀 Timer terminé, extinction en cours…"
+
+  # extinción propre selon le système
+  if command -v systemctl >/dev/null 2>&1; then
+    sudo systemctl poweroff
+  else
+    sudo shutdown -P now
+  fi
+}
 
 
 ##########  DOTFILES EXPORT ##########
