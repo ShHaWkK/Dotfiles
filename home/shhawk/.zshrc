@@ -261,45 +261,49 @@ add-zsh-hook chpwd _auto_venv
 _auto_venv
 
 
-##########  TIMER D'EXTINCTION AVEC TERMDOWN ##########
+##########  TIMER DE VERROUILLAGE (TERMDOWN -> HYPRLOCK) ##########
 
-timedown() {
+timelock() {
   if [[ -z "$1" ]]; then
-    echo "Usage : timedown <TIME>"
+    echo "Usage : timelock <DURATION>"
     echo "  Exemples :"
-    echo "    timedown 23:45       # heure locale (Paris si ton système est en Europe/Paris)"
-    echo "    timedown 1h30m       # dans 1h30"
-    echo "    timedown 45m         # dans 45 minutes"
+    echo "    timelock 10m"
+    echo "    timelock 1h"
+    echo "    timelock 25s"
+    return 1
+  fi
+
+  if ! command -v termdown >/dev/null 2>&1; then
+    echo "Erreur : termdown n'est pas installé."
+    echo "Installe-le avec : sudo dnf install termdown"
+    return 1
+  fi
+
+  if ! command -v hyprlock >/dev/null 2>&1; then
+    echo "Erreur : hyprlock n'est pas installé."
+    echo "Installe-le avec : sudo dnf install hyprlock"
     return 1
   fi
 
   local timespec="$*"
-
-  # petit rappel
-  echo "⏳ Extinction programmée avec termdown vers : $timespec"
-  echo "   (Heure locale : $(date '+%H:%M %Z'))"
-  echo "   Tu peux annuler en faisant Ctrl+C avant la fin."
+  echo "Verrouillage programmé dans : $timespec (Ctrl+C pour annuler)"
   echo
 
-  # compte à rebours (bloquant) - termdown accepte 23:30, '1h 5m', etc. :contentReference[oaicite:0]{index=0}
   termdown "$timespec"
   local status=$?
 
-  # si tu quittes termdown (Ctrl+C) → pas d’extinction
   if (( status != 0 )); then
-    echo "⏹ Timer interrompu (code $status), le PC ne sera pas éteint."
+    echo "Timer interrompu (code $status) : aucun verrouillage."
     return $status
   fi
 
-  echo "💀 Timer terminé, extinction en cours…"
-
-  # extinción propre selon le système
-  if command -v systemctl >/dev/null 2>&1; then
-    sudo systemctl poweroff
-  else
-    sudo shutdown -P now
-  fi
+  # Équivalent "Windows + L"
+  hyprlock
 }
+
+# Optionnel : alias rapide
+alias wl='hyprlock'
+
 
 
 ##########  DOTFILES EXPORT ##########
@@ -348,4 +352,4 @@ dotexport() {
 
 
 
-##########  FIN  ##########
+##########  FIN  #########
