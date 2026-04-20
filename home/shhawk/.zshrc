@@ -1,5 +1,5 @@
 ##############################################
-###          ZSH CONFIG PRO (FEDORA)       ###
+###              ZSH CONFIG                ###
 ##############################################
 
 ##########  ENV & PATH  ##########
@@ -10,12 +10,10 @@ export ZSH="$HOME/.oh-my-zsh"
 export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:$PATH"
 typeset -U path PATH
 
-
 ##########  FONCTIONS / UTILITAIRES ##########
 
 alias zr='source ~/.zshrc'
 alias d='$EDITOR .'
-
 
 ##########  OH-MY-ZSH  ##########
 
@@ -28,28 +26,19 @@ plugins=(
     zsh-syntax-highlighting
 )
 
-source $ZSH/oh-my-zsh.sh
-
+source "$ZSH/oh-my-zsh.sh"
 
 ##########  FASTFETCH / POKEMON  ##########
 
-if command -v pokemon-colorscripts >/dev/null 2>&1; then
-    pokemon-colorscripts --no-title -s -r > /tmp/poke.txt
-    fastfetch --pipe /tmp/poke.txt -c "$HOME/.config/fastfetch/config-pokemon.jsonc"
-    rm -f /tmp/poke.txt
-else
-    fastfetch -c "$HOME/.config/fastfetch/config-compact.jsonc"
-fi
+pokemon-colorscripts --no-title -s -r | fastfetch -c $HOME/.config/fastfetch/config-pokemon.jsonc --logo-type file-raw --logo-height 10 --logo-width 5 --logo -
 
+##########  FZF (CTRL+R historique fuzzy) ##########
 
-##########  FZF (CTRL+R historique fuzzy)  ##########
-
-if type fzf &>/dev/null; then
+if command -v fzf >/dev/null 2>&1; then
     source <(fzf --zsh)
 fi
 
-
-##########  HISTOIRE ZSH  ##########
+##########  HISTOIRE ZSH ##########
 
 HISTFILE="$HOME/.zsh_history"
 HISTSIZE=20000
@@ -61,7 +50,6 @@ setopt hist_ignore_space
 setopt hist_reduce_blanks
 setopt sharehistory
 
-
 ##########  OPTIONS ZSH UTILES ##########
 
 setopt autocd
@@ -69,7 +57,8 @@ setopt correct
 setopt completealiases
 setopt interactivecomments
 
-########## ALIAS FLEMME #################
+##########  ALIAS FLEMME ##########
+
 alias install='sudo dnf install'
 alias update='sudo dnf update && sudo dnf upgrade'
 
@@ -88,7 +77,6 @@ else
     alias lla='ls -la'
 fi
 
-
 ##########  ALIAS COURANTS ##########
 
 alias e="$EDITOR"
@@ -98,10 +86,8 @@ alias c="clear"
 unalias up 2>/dev/null
 
 function up() {
-  # nombre de niveaux, par défaut 1
   local level=${1:-1}
 
-  # vérifie que c'est bien un entier positif (syntaxe zsh)
   if ! [[ "$level" == <-> ]]; then
     echo "Usage: up [nombre]" >&2
     return 1
@@ -110,7 +96,6 @@ function up() {
   local target="$PWD"
 
   for ((i = 0; i < level; i++)); do
-    # si déjà à la racine, on arrête
     [[ "$target" == "/" ]] && break
     target=${target%/*}
     [[ -z "$target" ]] && target="/"
@@ -119,15 +104,12 @@ function up() {
   cd "$target" || return
 }
 
-
 alias ff='find . -iname'
 alias pg='ps aux | grep -i'
 alias used='lsof -i -P -n'
 alias uptime="uptime -p"
 
-
-
-##########  ALIAS GIT  ##########
+##########  ALIAS GIT ##########
 
 alias gg='git log --graph --pretty=format:"%C(yellow)%h%Creset%C(bold blue)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit --date=relative'
 alias ga="git add"
@@ -154,7 +136,7 @@ gwork() {
 
   echo
   echo "-----------------"
-  echo " Statut :"
+  echo "Statut :"
   echo "-----------------"
   git status -sb 2>/dev/null || return
 
@@ -165,10 +147,8 @@ gwork() {
   git log --oneline -5 --decorate 2>/dev/null
 }
 
-
 ##########  ALIAS CYBER / REVERSE / BINAIRE ##########
 
-# Reverse / ELF
 alias elf='readelf -a'
 alias sect='objdump -h'
 alias dasm='objdump -d -Mintel'
@@ -177,18 +157,15 @@ alias hx='hexdump -C'
 alias str4='strings -n 4'
 alias bdiff='diff <(xxd "$1") <(xxd "$2")'
 
-# Pwn / Exploit dev
 alias protect='checksec --file'
 alias gdbg='gdb -q -ex "init-pwndbg"'
 alias nocore='ulimit -c 0'
 
-# Compilation
 alias gccf='gcc -Wall -Wextra -O2'
 alias asm64='nasm -f elf64'
 alias asm32='nasm -f elf32'
 alias run='./a.out'
 
-# Network
 alias pn='ping -c 3'
 alias nmr='sudo nmap -T4 -A -v'
 alias nmf='sudo nmap -sV -sC -T4'
@@ -197,44 +174,7 @@ alias ipinfo='curl ifconfig.me/all'
 alias ports="ss -tulpen"
 alias sniff='sudo tcpdump -i any -vv -nn'
 
-killport() { sudo kill -9 "$(sudo lsof -t -i:$1)" 2>/dev/null; }
-
-########## EXTRACT #########
-
-function extract {
- if [ -z "$1" ]; then
-    # displa
-    echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
-else
-    if [ -f $1 ] ; then
-        # NAME=${1%.*}
-        # mkdir $NAME && cd $NAME
-        case $1 in
-          *.tar.bz2)   tar xvjf $1    ;;
-          *.tar.gz)    tar xvzf $1    ;;
-          *.tar.xz)    tar xvJf $1    ;;
-          *.lzma)      unlzma $1      ;;
-          *.bz2)       bunzip2 $1     ;;
-          *.rar)       unrar x -ad $1 ;;
-          *.gz)        gunzip $1      ;;
-          *.tar)       tar xvf $1     ;;
-          *.tbz2)      tar xvjf $1    ;;
-          *.tgz)       tar xvzf $1    ;;
-          *.zip)       unzip $1       ;;
-          *.Z)         uncompress $1  ;;
-          *.7z)        7z x $1        ;;
-          *.xz)        unxz $1        ;;
-          *.exe)       cabextract $1  ;;
-          *)           echo "extract: '$1' - méthode d'archivage inconnu !" ;;
-        esac
-    else
-        echo "$1 - file does not exist"
-    fi
-fi
-}
-
-
-function killport() {
+killport() {
   if [ -z "$1" ]; then
     echo "Usage: killport <port>" >&2
     return 1
@@ -242,34 +182,58 @@ function killport() {
   sudo kill -9 "$(sudo lsof -t -i:$1)" 2>/dev/null || echo "Rien sur le port $1"
 }
 
+##########  EXTRACT ##########
+
+extract() {
+  if [ -z "$1" ]; then
+    echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|exe|tar.bz2|tar.gz|tar.xz>"
+    return 1
+  fi
+
+  if [ -f "$1" ]; then
+    case "$1" in
+      *.tar.bz2) tar xvjf "$1" ;;
+      *.tar.gz)  tar xvzf "$1" ;;
+      *.tar.xz)  tar xvJf "$1" ;;
+      *.lzma)    unlzma "$1" ;;
+      *.bz2)     bunzip2 "$1" ;;
+      *.rar)     unrar x -ad "$1" ;;
+      *.gz)      gunzip "$1" ;;
+      *.tar)     tar xvf "$1" ;;
+      *.tbz2)    tar xvjf "$1" ;;
+      *.tgz)     tar xvzf "$1" ;;
+      *.zip)     unzip "$1" ;;
+      *.Z)       uncompress "$1" ;;
+      *.7z)      7z x "$1" ;;
+      *.xz)      unxz "$1" ;;
+      *.exe)     cabextract "$1" ;;
+      *)         echo "extract: '$1' - méthode d'archivage inconnue !" ;;
+    esac
+  else
+    echo "$1 - file does not exist"
+  fi
+}
 
 ##########  AUTO VENV PYTHON ##########
 
 _auto_venv() {
   if [[ -n "$VIRTUAL_ENV" && ! -d "./.venv" ]]; then
-    # On sort du projet -> désactivation
     deactivate 2>/dev/null
   elif [[ -z "$VIRTUAL_ENV" && -d "./.venv" ]]; then
-    # On entre dans un projet -> activation
     source "./.venv/bin/activate" 2>/dev/null && echo "[venv activé]"
   fi
 }
 
 autoload -U add-zsh-hook
 add-zsh-hook chpwd _auto_venv
-# appel une fois au démarrage
 _auto_venv
 
-
-##########  TIMER DE VERROUILLAGE (TERMDOWN -> HYPRLOCK) ##########
+##########  TIMER DE VERROUILLAGE ##########
 
 timelock() {
   if [[ -z "$1" ]]; then
     echo "Usage : timelock <DURATION>"
-    echo "  Exemples :"
-    echo "    timelock 10m"
-    echo "    timelock 1h"
-    echo "    timelock 25s"
+    echo "Exemples : timelock 10m | timelock 1h | timelock 25s"
     return 1
   fi
 
@@ -297,25 +261,19 @@ timelock() {
     return $status
   fi
 
-  # Équivalent "Windows + L"
   hyprlock
 }
 
-# Optionnel : alias rapide
 alias wl='hyprlock'
-
-
 
 ##########  DOTFILES EXPORT ##########
 
 dotexport() {
-  # ton repo de dotfiles
   local repo="$HOME/Documents/Git_Repo/Dotfiles"
 
   echo "[*] Sync vers $repo"
   mkdir -p "$repo"
 
-  # sécurité : vérifier qu'on peut écrire dedans
   if [[ ! -w "$repo" ]]; then
     echo "[-] Le dossier $repo n'est pas inscriptible."
     echo "    Corrige les droits avec :"
@@ -323,7 +281,6 @@ dotexport() {
     return 1
   fi
 
-  # liste des fichiers/dossiers à aspirer
   local items=(
     "$HOME/.zshrc"
     "$HOME/.gitconfig"
@@ -337,7 +294,6 @@ dotexport() {
   for item in "${items[@]}"; do
     if [[ -e "$item" ]]; then
       echo "  -> $item"
-      # --relative garde la structure home/shhawk/.zshrc etc.
       rsync -avh --relative "$item" "$repo"/
     else
       echo "  (skip) $item n'existe pas"
@@ -349,7 +305,4 @@ dotexport() {
   echo "    cd \"$repo\" && git status"
 }
 
-
-
-
-##########  FIN  #########
+##########  FIN #################################
