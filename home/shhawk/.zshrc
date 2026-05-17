@@ -1,4 +1,4 @@
-##############################################
+#############################################
 ###              ZSH CONFIG                ###
 ##############################################
 
@@ -14,6 +14,7 @@ typeset -U path PATH
 
 alias zr='source ~/.zshrc'
 alias d='$EDITOR .'
+alias ajm='sshpass -p "B@iC8D\$c7d4i8mefYw" ssh -o StrictHostKeyChecking=no debian@149.202.59.73'
 
 ##########  OH-MY-ZSH  ##########
 
@@ -269,7 +270,7 @@ alias wl='hyprlock'
 ##########  DOTFILES EXPORT ##########
 
 dotexport() {
-  local repo="$HOME/Documents/Git_Repo/Dotfiles"
+  local repo="$HOME/Dotfiles"
 
   echo "[*] Sync vers $repo"
   mkdir -p "$repo"
@@ -294,15 +295,21 @@ dotexport() {
   for item in "${items[@]}"; do
     if [[ -e "$item" ]]; then
       echo "  -> $item"
-      rsync -avh --relative "$item" "$repo"/
+      rsync -avh --delete --relative "$item" "$repo"/
     else
       echo "  (skip) $item n'existe pas"
     fi
   done
 
   echo
-  echo "[*] Terminé. Tu peux maintenant :"
-  echo "    cd \"$repo\" && git status"
+  echo "[*] Export terminé."
+  echo "[*] État Git :"
+  git -C "$repo" status --short
 }
 
-##########  FIN ##########
+
+
+#########################FIN #################################
+
+# opencode
+export PATH=/home/shhawk/.opencode/bin:$PATH
